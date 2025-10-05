@@ -1,0 +1,67 @@
+// === FRONTEND SHORTCODE ===
+add_shortcode('show_daily_reports', 'frontend_reports_display');
+
+function frontend_reports_display() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'daily_reports';
+
+    // === UPDATE DATA ===
+    if (isset($_POST['update_quantity']) && isset($_POST['update_id'])) {
+        $update_id = absint($_POST['update_id']);
+        $update_quantity = absint($_POST['quantity']);
+
+        if ($update_id > 0 && $update_quantity >= 0) {
+            $wpdb->update(
+                $table_name,
+                ['quantity' => $update_quantity],
+                ['id' => $update_id],
+                ['%d'],
+                ['%d']
+            );
+            echo "<div style='color:green;'>Quantity updated successfully.</div>";
+        }
+    }
+
+    // === FETCH ALL DATA ===
+    $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY id DESC", ARRAY_A);
+
+    ob_start();
+    ?>
+    <div class="frontend-reports">
+        <h2>Daily Reports (Frontend)</h2>
+        <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+            <thead style="background: #f0f0f0;">
+                <tr>
+                    <th>ID</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($results): ?>
+                    <?php foreach ($results as $row): ?>
+                         <form method="post" style="display:flex; gap:5px;">
+                        <tr>
+                            <td><?php echo esc_html($row['id']); ?></td>
+                            <td>
+                               
+                                    <input type="hidden" name="update_id" value="<?php echo $row['id']; ?>">
+                                    <input type="number" name="quantity" value="<?php echo esc_attr($row['quantity']); ?>" style="width:80px;">
+                            </td>
+                            <td>
+                                <button type="submit" name="update_quantity">Update</button>
+                            </td>
+                        </tr>
+                        
+                        </form>
+
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="3">No data found.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
+    return ob_get_clean();
+}
