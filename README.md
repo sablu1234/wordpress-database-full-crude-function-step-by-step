@@ -1,0 +1,1 @@
+# wordpress-database-full-crude-function-step-by-step
