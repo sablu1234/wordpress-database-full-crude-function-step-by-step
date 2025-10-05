@@ -1,0 +1,18 @@
+<?php
+/*
+Plugin Name: Reports
+Description: Daily Reports Plugin
+Version: 1.0
+Author: Hasan
+*/
+
+// Prevent direct access
+if ( ! defined('ABSPATH') ) exit;
+
+// Include table function
+include_once ('file/table.php');
+
+// Register activation hook
+register_activation_hook(__FILE__, 'reports_create_table');
+
+include_once ('file/admin.php');
