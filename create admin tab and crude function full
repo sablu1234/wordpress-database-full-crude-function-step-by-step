@@ -121,6 +121,8 @@ function reports_admin_page(){
                 ['%d'],
                 ['%d'],
             );
+            wp_redirect(admin_url('admin.php?page=reports'));
+            exit;
         }
     }
 
@@ -128,11 +130,12 @@ function reports_admin_page(){
         if(isset($_GET['delete'])){
             $id = intval($_GET['delete']);
             $wpdb->delete($table_name, ['id'=> $id]);
+            echo "Row delete successfull";
+            wp_redirect(admin_url('admin.php?page=reports'));
+            exit;
         }
   
 
 }
-
-
 
 
