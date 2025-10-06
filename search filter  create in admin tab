@@ -1,0 +1,84 @@
+<?php
+
+
+add_action('admin_menu', function() {
+    add_menu_page(
+        'Reports',
+        'Reports',
+        'manage_options',
+        'reports',
+        'reports_admin_page',
+        'dashicons-chart-bar',
+        25
+    );
+});
+
+function reports_admin_page() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'daily_reports';
+
+    // --- handle search ---
+$search = isset($_POST['search_reports']) ? sanitize_text_field( wp_unslash($_POST['search']) ) : '';
+
+// --- build query safely ---
+if ( $search !== '' ) {
+    $like = '%' . $wpdb->esc_like( $search ) . '%';
+
+    // numeric or text search in all relevant columns
+    $query = is_numeric($search)
+        ? $wpdb->prepare(
+            "SELECT * FROM $table_name 
+             WHERE id = %d OR quantity = %d OR run = %d LIKE %s 
+             ORDER BY id DESC",
+            intval($search),
+            intval($search),
+            $like
+        )
+        : $wpdb->prepare(
+            "SELECT * FROM $table_name 
+             WHERE run LIKE %s 
+             ORDER BY id DESC",
+            $like
+        );
+} else {
+    $query = "SELECT * FROM $table_name ORDER BY id DESC";
+}
+
+$results = $wpdb->get_results( $query, ARRAY_A );
+ ?>
+
+    <div class="wrap">
+        <h1>Daily Reports</h1>
+
+        <form method="post" style="margin-bottom:15px;">
+            <input type="search" name="search" placeholder="Search by quantity, id or run" value="<?php echo esc_attr($search); ?>" />
+            <button type="submit" name="search_reports" class="button">Search</button>
+            <a href="<?php echo esc_url( admin_url('admin.php?page=reports') ); ?>" class="button">Reset</a>
+        </form>
+
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th width="80">ID</th>
+                    <th>Quantity</th>
+                    <th>Run</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ( $results ) : ?>
+                    <?php foreach ( $results as $row ) : ?>
+                        <tr>
+                            <td><?php echo esc_html( $row['id'] ); ?></td>
+                            <td><?php echo esc_html( $row['quantity'] ); ?></td>
+                            <td><?php echo esc_html( $row['run'] ); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <tr><td colspan="3">No records found.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php
+}
